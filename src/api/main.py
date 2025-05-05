@@ -43,52 +43,62 @@ tracker = DeepSORTTracker()
 class TrackResponse(BaseModel):
     tracks: list
 
-def process_video_with_tracking(input_path, output_path):
-    cap = cv2.VideoCapture(input_path)
+from fastapi.responses import StreamingResponse
+
+def process_video_stream(input_file):
+    import cv2
+    import tempfile
+
+    cap = cv2.VideoCapture(input_file)
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     fps = cap.get(cv2.CAP_PROP_FPS)
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    out = cv2.VideoWriter(output_path, fourcc, fps, (w, h))
 
-    detector = YOLOv8Ultralytics(MODEL_PATH)
-    tracker = DeepSORTTracker()
+    # Уменьшаем разрешение для снижения нагрузки (например, 640x360)
+    target_w, target_h = 640, 360
 
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        detections = detector.detect(frame)
-        tracks = tracker.update(detections, frame=frame)
-        # Нарисовать треки
-        for tr in tracks:
-            x1, y1, x2, y2 = tr['bbox']
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0,255,0), 2)
-            cv2.putText(frame, f"ID: {tr['track_id']}", (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
-        out.write(frame)
-    cap.release()
-    out.release()
+    with tempfile.NamedTemporaryFile(suffix='.mp4') as temp_out:
+        out = cv2.VideoWriter(temp_out.name, fourcc, fps, (target_w, target_h))
+
+        frame_id = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame_id += 1
+            # Пропускаем кадры для ускорения (обрабатываем каждый 3-й)
+            if frame_id % 3 != 0:
+                resized = cv2.resize(frame, (target_w, target_h))
+                out.write(resized)
+                continue
+            resized = cv2.resize(frame, (target_w, target_h))
+            detections = detector.detect(resized)
+            tracks = tracker.update(detections, frame=resized)
+            for tr in tracks:
+                x1, y1, x2, y2 = tr['bbox']
+                cv2.rectangle(resized, (x1, y1), (x2, y2), (0,255,0), 2)
+                cv2.putText(resized, f"ID: {tr['track_id']}", (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
+            out.write(resized)
+        cap.release()
+        out.release()
+        temp_out.seek(0)
+        while True:
+            chunk = temp_out.read(1024 * 1024)
+            if not chunk:
+                break
+            yield chunk
 
 @app.post("/process_video")
 async def process_video(video: UploadFile = File(...)):
     import tempfile
     import shutil
 
-    # Сохраняем входящее видео во временный файл
     with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as in_tmp:
         shutil.copyfileobj(video.file, in_tmp)
         in_path = in_tmp.name
 
-    # Путь для выходного видео
-    out_tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-    out_path = out_tmp.name
-    out_tmp.close()
-
-    # Обработка видео: детекция и трекинг
-    process_video_with_tracking(in_path, out_path)
-
-    # Отправляем обработанное видео пользователю
-    return StreamingResponse(open(out_path, 'rb'), media_type='video/mp4')
+    return StreamingResponse(process_video_stream(in_path), media_type='video/mp4')
 
 app.include_router(visualization_router)
 
