@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "src"
+version = "0.1.0"
+description = ""
+authors = ["I-AM-LAMER <vadimtatarnikov300605@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.12"
+deep-sort-realtime = "^1.3.2"
+pydantic = "^2.11.4"
+uvicorn = "^0.34.2"
+gunicorn = "^23.0.0"
+websockets = "^15.0.1"
+onnxruntime = "^1.21.1"
+python-multipart = "^0.0.20"
+tqdm = "^4.67.1"
+dill = "^0.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
