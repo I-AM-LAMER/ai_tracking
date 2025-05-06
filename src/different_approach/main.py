@@ -88,7 +88,7 @@ def parse_args():
     parser.add_argument("--img-size", nargs="+", type=int, default=[640], help="inference size h,w")
     parser.add_argument("--conf-thres", type=float, default=0.45, help="confidence threshold")
     parser.add_argument("--iou-thres", type=float, default=0.45, help="NMS IoU threshold")
-    parser.add_argument("--max-det", type=int, default=1000, help="maximum detections per image")
+    parser.add_argument("--max-det", type=int, default=100, help="maximum detections per image")
     parser.add_argument("--save", action="store_true", help="Save detected images")
     parser.add_argument("--view", action="store_true", help="View inferenced images")
     parser.add_argument("--project", default="runs", help="save results to project/name")
