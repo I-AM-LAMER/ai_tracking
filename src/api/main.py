@@ -2,7 +2,9 @@ import cv2
 from src.tracking.detector import YOLOv8ONNX
 from src.tracking.tracker import DeepSORTTracker
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+from src.api.utils import letterbox, scale_boxes
 import os
+import numpy as np
 
 MODEL_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -10,8 +12,9 @@ MODEL_PATH = os.path.join(
     "crowdhuman.onnx"
 )
 
+
+
 def process_video(input_path, output_path):
-    import cv2
     cap = cv2.VideoCapture(input_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     detector = YOLOv8ONNX(MODEL_PATH, input_size=640)
@@ -23,8 +26,20 @@ def process_video(input_path, output_path):
         ret, frame = cap.read()
         if not ret:
             break
-        detections = detector.detect(frame)
-        tracks = tracker.update(detections, frame=frame)
+
+        # 1. Letterbox resize for detection
+        img_resized, scale, (dw, dh) = letterbox(frame, (640, 640))
+        detections = detector.detect(img_resized)
+
+        # 2. Map boxes back to original frame
+        mapped_detections = []
+        for det in detections:
+            box = np.array(det[:4]).reshape(1, 4).astype(np.float32)
+            box = scale_boxes(img_resized.shape, box, frame.shape)
+            x1, y1, x2, y2 = map(int, box[0])
+            mapped_detections.append([x1, y1, x2, y2, det[4], det[5]])
+
+        tracks = tracker.update(mapped_detections, frame=frame)
         for tr in tracks:
             x1, y1, x2, y2 = tr['bbox']
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0,255,0), 2)
