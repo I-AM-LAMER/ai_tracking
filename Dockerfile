@@ -18,6 +18,6 @@ COPY ./src /project/src
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-CMD ["gunicorn", "-c", "gunicorn_conf.py", "src.api.main:app"]
+CMD ["python3", "src/api/main.py"]
 
 
