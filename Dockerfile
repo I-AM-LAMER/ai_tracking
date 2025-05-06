@@ -13,11 +13,11 @@ RUN pip install ultralytics
 COPY pyproject.toml poetry.lock* /project/
 COPY gunicorn_conf.py /project/
 COPY README.md /project/
-COPY ./src /project/src
+COPY ./src/different_approach /project/src
 
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-CMD ["python3", "src/api/main.py"]
+CMD ["python3", "src/main.py", "--weights", "/project/src/crowdhuman.onnx", "--source", "/project/src/detection.mp4", "--save", "--project", "/project/src"]
 
 

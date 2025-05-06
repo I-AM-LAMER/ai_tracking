@@ -6,4 +6,4 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./src/api:/project/src/api
+      - ./src/different_approach:/project/src
