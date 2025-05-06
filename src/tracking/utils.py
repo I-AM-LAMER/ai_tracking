@@ -168,8 +168,25 @@ def get_txt_color(color=(128, 128, 128), txt_color=(255, 255, 255)):
     else:
         return txt_color
 
+def bbox_iou(box1, box2):
+    # box = [x1, y1, x2, y2]
+    x1, y1, x2, y2 = box1
+    x1g, y1g, x2g, y2g = box2
 
-def draw_detections(image, box, score, class_name, color):
+    xi1 = max(x1, x1g)
+    yi1 = max(y1, y1g)
+    xi2 = min(x2, x2g)
+    yi2 = min(y2, y2g)
+    inter_area = max(0, xi2 - xi1) * max(0, yi2 - yi1)
+
+    box1_area = (x2 - x1) * (y2 - y1)
+    box2_area = (x2g - x1g) * (y2g - y1g)
+    union_area = box1_area + box2_area - inter_area
+
+    return inter_area / union_area if union_area else 0
+
+
+def draw_detections(image, box, score, class_name, color, unique_count=0):
     x1, y1, x2, y2 = map(int, box)
     label = f"{class_name} {score:.2f}"
 
@@ -196,6 +213,9 @@ def draw_detections(image, box, score, class_name, color):
         1,
         lineType=cv2.LINE_AA
     )
+    x = image.shape[1] - text_width - 10
+    y = text_height + 10
+    cv2.putText(image, f"Count: {unique_count}", (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_size, get_txt_color(color), 2, lineType=cv2.LINE_AA)
 
 
 VID_FORMATS = ['mp4', 'avi', 'mov']

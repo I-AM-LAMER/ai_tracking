@@ -1,10 +1,3 @@
-"""
-Author: Yakhyokhuja Valikhujaev
-Date: 2024-08-07
-Description: YOLOv5 ONNX inference
-Copyright (c) 2024 Yakhyokhuja Valikhujaev. All rights reserved.
-"""
-
 import cv2
 import onnxruntime
 import numpy as np
@@ -104,21 +97,11 @@ class YOLOv5:
         return image_tensor
 
     def postprocess(self, prediction: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Post processing
-
-        Args:
-            prediction (np.ndarray): Model raw output (shape: [1, 25200, 85])
-
-        Returns:
-            Tuple: boxes, confidence scores, class indexes
-        """
-        # Squeeze the output to match the expected shape
         outputs = np.squeeze(prediction[0])
 
-        # Extract boxes, scores, and classes
-        boxes = outputs[:, :4]  # x1, y1, x2, y2
-        scores = outputs[:, 4]  # confidence scores
-        classes = outputs[:, 5:]  # class probabilities
+        boxes = outputs[:, :4]
+        scores = outputs[:, 4]
+        classes = outputs[:, 5:]
 
         boxes = self.xywh2xyxy(boxes)
 
@@ -128,19 +111,27 @@ class YOLOv5:
         scores = scores[mask]
         classes = classes[mask]
 
-        # Get class with highest probability for each detection
-        class_ids = np.argmax(classes, axis=1)[:self.max_det]
+        # Get class with highest probability and corresponding index
+        class_ids = np.argmax(classes, axis=1)
+
+        # Filter only "person" class (assuming self.names is a dict {id: "class_name"})
+        person_class_ids = [k for k, v in self.names.items() if v.lower() == 'person']
+        person_mask = np.isin(class_ids, person_class_ids)
+
+        boxes = boxes[person_mask]
+        scores = scores[person_mask]
+        class_ids = class_ids[person_mask]
 
         # Apply NMS
         if self.nms_mode == "torchvision":
-            # better performance
             indices = torchvision.ops.nms(torch.tensor(boxes), torch.tensor(scores), self.iou_threshold).numpy()
         else:
-            indices = cv2.dnn.NMSBoxes(boxes, scores, self.conf_threshold, self.iou_threshold)
+            indices = cv2.dnn.NMSBoxes(boxes.tolist(), scores.tolist(), self.conf_threshold, self.iou_threshold)
+            indices = [i[0] for i in indices] if len(indices) > 0 else []
 
         boxes, scores, class_ids = boxes[indices], scores[indices], class_ids[indices]
-
         return boxes, scores, class_ids
+
 
     def xywh2xyxy(self, x: np.ndarray) -> np.ndarray:
         """xywh -> xyxy

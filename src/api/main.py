@@ -4,11 +4,13 @@ import logging
 import argparse
 import numpy as np
 from pathlib import Path
+from deep_sort_realtime.deepsort_tracker import DeepSort
 
 from typing import List, Tuple
 
 from src.tracking.yolov5 import YOLOv5
 from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors, increment_path, LoadMedia
+from src.tracking.utils import bbox_iou
 
 
 def run_object_detection(
@@ -27,9 +29,11 @@ def run_object_detection(
         save_dir = increment_path(Path(project) / name)
         save_dir.mkdir(parents=True, exist_ok=True)
 
+    tracker = DeepSort(max_age=60, n_init=5)
     model = YOLOv5(weights, conf_thres, iou_thres, max_det)
     img_size = check_img_size(img_size, s=model.stride)
     dataset = LoadMedia(source, img_size=img_size)
+    unique_ids = set()
 
     # For writing video and webcam
     vid_writer = None
@@ -43,16 +47,50 @@ def run_object_detection(
 
     for resized_image, original_image, status in dataset:
         # Model Inference
+        # YOLOv5 детекции
         boxes, scores, class_ids = model(resized_image)
-
-        # Scale bounding boxes to original image size
         boxes = scale_boxes(resized_image.shape, boxes, original_image.shape).round()
 
-        # Draw bunding boxes
-        for box, score, class_id in zip(boxes, scores, class_ids):
-            draw_detections(original_image, box, score, model.names[int(class_id)], colors(int(class_id)))
+        detections = []
+        yolo_outputs = []  # сохраняем для трекинга
 
-        # Print results
+        for box, score, class_id in zip(boxes, scores, class_ids):
+            box_int = [int(b) for b in box]
+            detections.append((box_int, score, 'person'))  # передаём в DeepSort
+            yolo_outputs.append((box_int, score, class_id))  # сохраняем на потом
+
+        # Deep SORT трекинг
+        tracks = tracker.update_tracks(detections, frame=original_image)
+
+        for track in tracks:
+            if not track.is_confirmed():
+                continue
+            track_id = track.track_id
+            unique_ids.add(track_id)
+
+            track_box = [int(coord) for coord in track.to_ltrb()]
+
+            best_iou = 0
+            best_yolo = None
+
+            for box, score, class_id in yolo_outputs:
+                iou = bbox_iou(track_box, box)
+                if iou > best_iou:
+                    best_iou = iou
+                    best_yolo = (box, score, class_id)
+
+            if best_yolo and best_iou > 0.3:  # порог IoU, можешь изменить
+                box, score, class_id = best_yolo
+                draw_detections(
+                    original_image,
+                    box,
+                    score,
+                    f"id {track_id}",
+                    colors(int(class_id)),
+                    unique_count=len(unique_ids)
+                )
+
+        
         for c in np.unique(class_ids):
             n = (class_ids == c).sum()  # detections per class
             status += f"{n} {model.names[int(c)]}{'s' * (n > 1)}, "  # add to string
@@ -88,7 +126,7 @@ def parse_args():
     parser.add_argument("--img-size", nargs="+", type=int, default=[640], help="inference size h,w")
     parser.add_argument("--conf-thres", type=float, default=0.45, help="confidence threshold")
     parser.add_argument("--iou-thres", type=float, default=0.45, help="NMS IoU threshold")
-    parser.add_argument("--max-det", type=int, default=100, help="maximum detections per image")
+    parser.add_argument("--max-det", type=int, default=1000, help="maximum detections per image")
     parser.add_argument("--save", action="store_true", help="Save detected images")
     parser.add_argument("--view", action="store_true", help="View inferenced images")
     parser.add_argument("--project", default="runs", help="save results to project/name")
