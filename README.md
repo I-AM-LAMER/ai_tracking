@@ -5,57 +5,47 @@ This project implements a real-time people tracking system using YOLOv8 for dete
 ## Project Structure
 
 ```
-people-tracking-workspace
+ai_tracking
 ├── src
-│   ├── tracking
-│   │   ├── detector.py       # YOLOv8 model for detecting people
-│   │   ├── tracker.py        # DeepSORT algorithm for tracking
-│   │   └── utils.py          # Utility functions for video processing
 │   ├── api
-│   │   ├── main.py           # FastAPI application for tracking API
-│   │   └── schemas.py        # Pydantic models for API requests/responses
-│   ├── visualization
-│   │   ├── server.py         # WebSocket server for real-time visualization
-│   │   └── static
-│   │       ├── index.html     # Main HTML file for client-side application
-│   │       └── app.js         # Client-side JavaScript for WebSocket connection
-│   └── config.py             # Configuration settings for the application
-├── requirements.txt           # Python dependencies
-├── docker-compose.yml         # Service definitions for Docker
-├── Dockerfile                 # Instructions to build Docker image
-├── README.md                  # Project documentation
-└── .env                       # Environment variables
+│   │   ├── detection.mp4
+│   │   └── main.py
+│   ├── models
+│   │   └── crowdhuman.onnx
+│   └── tracking
+│       ├── utils.py
+│       └── yolov5.py
+|
+├── docker-compose.yml
+├── Dockerfile
+├── poetry.lock
+├── pyproject.toml
+└── README.md
 ```
 
 ## Setup Instructions
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
-   cd people-tracking-workspace
+   git clone https://github.com/I-AM-LAMER/ai_tracking
+   cd ai-tracking
    ```
 
-2. Install dependencies:
+2. Run the application using Docker:
    ```
-   pip install -r requirements.txt
-   ```
-
-3. Configure environment variables in the `.env` file.
-
-4. Run the application using Docker:
-   ```
-   docker-compose up --build
+   docker compose up --build
    ```
 
-5. Access the API at `http://localhost:8000/track` and the visualization at `http://localhost:3000`.
+3. in the src you see result(number) folder in that folder you will see detection.mp4 - this is tracked video with painted border boxes, prediction_score, tracking_id and people count
 
 ## Usage
 
-- Send video frames to the `/track` endpoint to receive tracking coordinates.
-- Connect to the WebSocket server for real-time updates on tracking data.
+- Replace (with the same filename) or leave the detection.mp4 file
+- Run with docker compose up --build
+- Wait for end of a program and observe generated video
 
 ## Additional Notes
 
-- The project uses YOLOv8 for object detection without additional training.
+- The project uses YOLOv5 pretrained on crowdhuman dataset.
 - The tracking is focused solely on people detection.
 - Optionally, WebSocket can be implemented for enhanced real-time visualization.

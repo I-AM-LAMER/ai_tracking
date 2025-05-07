@@ -7,19 +7,7 @@ from pathlib import Path
 
 
 class Colors:
-    """
-    Ultralytics default color palette https://ultralytics.com/.
-
-    This class provides methods to work with the Ultralytics color palette, including converting hex color codes to
-    RGB values.
-
-    Attributes:
-        palette (list of tuple): List of RGB color values.
-        n (int): The number of colors in the palette.
-    """
-
     def __init__(self):
-        """Initialize colors as hex = matplotlib.colors.TABLEAU_COLORS.values()."""
         hexs = (
             "042AFF",
             "0BDBEB",
@@ -46,77 +34,61 @@ class Colors:
         self.n = len(self.palette)
 
     def __call__(self, i, bgr=False):
-        """Converts hex color codes to RGB values."""
         c = self.palette[int(i) % self.n]
         return (c[2], c[1], c[0]) if bgr else c
 
     @staticmethod
     def hex2rgb(h):
-        """Converts hex color codes to RGB values (i.e. default PIL order)."""
         return tuple(int(h[1 + i: 1 + i + 2], 16) for i in (0, 2, 4))
 
 
-colors = Colors()  # create instance
+colors = Colors()
 
 
 def check_img_size(imgsz, s=32):
-    """Adjusts image size to be divisible by stride `s`, supports int or list/tuple input, returns adjusted size."""
-
     def make_divisible(x, divisor): return math.ceil(x / divisor) * divisor
 
-    imgsz = list(imgsz)  # convert to list if tuple
+    imgsz = list(imgsz)
     new_size = [make_divisible(x, s) for x in imgsz]
 
     return new_size
 
 
 def increment_path(path,  sep="", mkdir=False):
-    """
-    Generates an incremented file or directory path if it exists, with optional mkdir; args: path, sep="", mkdir=False.
-
-    Example: runs/exp --> runs/exp{sep}2, runs/exp{sep}3, ... etc
-    """
-    path = Path(path)  # os-agnostic
+    path = Path(path)
     if path.exists():
         path, suffix = (path.with_suffix(""), path.suffix) if path.is_file() else (path, "")
 
-        # Method 1
         for n in range(2, 9999):
-            p = f"{path}{sep}{n}{suffix}"  # increment path
-            if not os.path.exists(p):  #
+            p = f"{path}{sep}{n}{suffix}"
+            if not os.path.exists(p):
                 break
         path = Path(p)
 
     if mkdir:
-        path.mkdir(parents=True)  # make directory
+        path.mkdir(parents=True)
 
     return path
 
 
 def letterbox(image, target_shape=(640, 640), color=(114, 114, 114)):
-    """Resizes and pads image to target_shape, returns resized image"""
     height, width = image.shape[:2]
 
-    # Calculate scale and new size
     scale = min(target_shape[0] / height, target_shape[1] / width)
     new_size = (int(width * scale), int(height * scale))
 
-    # Resize the image
     image = cv2.resize(image, new_size, interpolation=cv2.INTER_LINEAR)
 
-    # Calculate padding
     dw, dh = (target_shape[1] - new_size[0]) / 2, (target_shape[0] - new_size[1]) / 2
     top, bottom = int(dh), int(target_shape[0] - new_size[1] - int(dh))
     left, right = int(dw), int(target_shape[1] - new_size[0] - int(dw))
 
-    # Apply padding
     image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
     return image, scale, (dw, dh)
 
 
 def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
-    """Rescales (xyxy) bounding boxes from img1_shape to img0_shape, optionally using provided `ratio_pad`."""
     scale = min(img1_shape[0] / img0_shape[0], img1_shape[1] / img0_shape[1])  # scale  = old / new
     dw, dh = (img1_shape[1] - img0_shape[1] * scale) / 2, (img1_shape[0] - img0_shape[0] * scale) / 2  # wh padding
 
@@ -129,7 +101,6 @@ def scale_boxes(img1_shape, boxes, img0_shape, ratio_pad=None):
 
 
 def clip_boxes(boxes, shape):
-    """Clips bounding box coordinates (xyxy) to fit within the specified image shape (height, width)."""
     boxes[..., [0, 2]] = boxes[..., [0, 2]].clip(0, shape[1])  # x1, x2
     boxes[..., [1, 3]] = boxes[..., [1, 3]].clip(0, shape[0])  # y1, y2
 
@@ -160,7 +131,6 @@ def get_txt_color(color=(128, 128, 128), txt_color=(255, 255, 255)):
         (104, 31, 17),
     }
 
-    """Assign text color based on background color."""
     if color in dark_colors:
         return 104, 31, 17
     elif color in light_colors:
@@ -190,32 +160,24 @@ def draw_detections(image, box, score, class_name, color, unique_count=0):
     x1, y1, x2, y2 = map(int, box)
     label = f"{class_name} {score:.2f}"
 
-    # Draw the bounding box
     cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
 
-    # Calculate text size and scale
     font_size = min(image.shape[:2]) * 0.0006
 
-    # Get text size
     (text_width, text_height), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_size, 1)
 
-    # Create filled rectangle for text background
     cv2.rectangle(image, (x1, y1 - int(1.3 * text_height)), (x1 + text_width, y1), color, -1)
 
-    # Put text on the image
     cv2.putText(
         image,
         label,
         (x1, y1 - int(0.3 * text_height)),
         cv2.FONT_HERSHEY_SIMPLEX,
         font_size,
-        get_txt_color(color),
+        get_txt_color(),
         1,
         lineType=cv2.LINE_AA
     )
-    x = image.shape[1] - text_width - 10
-    y = text_height + 10
-    cv2.putText(image, f"Count: {unique_count}", (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_size, get_txt_color(color), 2, lineType=cv2.LINE_AA)
 
 
 VID_FORMATS = ['mp4', 'avi', 'mov']
@@ -223,10 +185,8 @@ IMG_FORMATS = ['jpg', 'jpeg', 'png']
 
 
 class LoadMedia:
-    """YOLOv5 media dataloader for a single image, video or webcam."""
 
     def __init__(self, path, img_size=(640, 640)):
-        """Initializes YOLOv5 loader for a single image or video."""
         self.img_size = img_size
         self.frames = 0
 
@@ -252,12 +212,10 @@ class LoadMedia:
         self.path = path
 
     def __iter__(self):
-        """Initializes iterator by resetting count and returns the iterator object itself."""
         self.frame = 0  # Resetting the frame count
         return self
 
     def __next__(self):
-        """Advances to the next frame in the video or returns the image, raising StopIteration if at the end."""
         if self.type in ["video", "webcam"]:
             self.cap.grab()
             ret, original_frame = self.cap.retrieve()
@@ -281,5 +239,4 @@ class LoadMedia:
         return resized_frame, original_frame, status
 
     def __len__(self):
-        """Returns the number of frames in the video or 1 for an image."""
         return self.frames if self.type == 'video' else 1

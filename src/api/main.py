@@ -1,16 +1,14 @@
 import os
 import cv2
-import logging
 import argparse
 import numpy as np
 from pathlib import Path
 from deep_sort_realtime.deepsort_tracker import DeepSort
 
-from typing import List, Tuple
+from typing import List
 
 from src.tracking.yolov5 import YOLOv5
 from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors, increment_path, LoadMedia
-from src.tracking.utils import bbox_iou
 
 
 def run_object_detection(
@@ -35,7 +33,6 @@ def run_object_detection(
     dataset = LoadMedia(source, img_size=img_size)
     unique_ids = set()
 
-    # For writing video and webcam
     vid_writer = None
     if save and dataset.type in ["video", "webcam"]:
         cap = dataset.cap
@@ -46,59 +43,57 @@ def run_object_detection(
         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
     for resized_image, original_image, status in dataset:
-        # Model Inference
-        # YOLOv5 детекции
         boxes, scores, class_ids = model(resized_image)
         boxes = scale_boxes(resized_image.shape, boxes, original_image.shape).round()
 
         detections = []
-        yolo_outputs = []  # сохраняем для трекинга
-
         for box, score, class_id in zip(boxes, scores, class_ids):
-            box_int = [int(b) for b in box]
-            detections.append((box_int, score, 'person'))  # передаём в DeepSort
-            yolo_outputs.append((box_int, score, class_id))  # сохраняем на потом
+            x1, y1, x2, y2 = box
+            x = int(x1)
+            y = int(y1)
+            w = int(x2 - x1)
+            h = int(y2 - y1)
+            label = model.names[int(class_id)]
+            detections.append(([x, y, w, h], score, label))
 
-        # Deep SORT трекинг
         tracks = tracker.update_tracks(detections, frame=original_image)
 
         for track in tracks:
             if not track.is_confirmed():
                 continue
+
             track_id = track.track_id
+            x1, y1, x2, y2 = map(int, track.to_ltrb())
+            track_conf = track.det_conf if track.det_conf is not None else 0.0
+
             unique_ids.add(track_id)
 
-            track_box = [int(coord) for coord in track.to_ltrb()]
+            draw_detections(
+                original_image,
+                [x1, y1, x2, y2],
+                track_conf,
+                f"id {track_id}",
+                colors(0),
+                unique_count=len(unique_ids)
+            )
+        cv2.putText(
+            original_image,
+            f"Count: {len(unique_ids)}",
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 255),
+            2,
+            lineType=cv2.LINE_AA
+        )
 
-            best_iou = 0
-            best_yolo = None
-
-            for box, score, class_id in yolo_outputs:
-                iou = bbox_iou(track_box, box)
-                if iou > best_iou:
-                    best_iou = iou
-                    best_yolo = (box, score, class_id)
-
-            if best_yolo and best_iou > 0.3:  # порог IoU, можешь изменить
-                box, score, class_id = best_yolo
-                draw_detections(
-                    original_image,
-                    box,
-                    score,
-                    f"id {track_id}",
-                    colors(int(class_id)),
-                    unique_count=len(unique_ids)
-                )
-
-        
         for c in np.unique(class_ids):
-            n = (class_ids == c).sum()  # detections per class
-            status += f"{n} {model.names[int(c)]}{'s' * (n > 1)}, "  # add to string
+            n = (class_ids == c).sum()
+            status += f"{n} {model.names[int(c)]}{'s' * (n > 1)}, "
 
         if view:
-            # Display the image with detections
             cv2.imshow('Webcam Inference', original_image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):  # Press 'q' to quit
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
         print(status)

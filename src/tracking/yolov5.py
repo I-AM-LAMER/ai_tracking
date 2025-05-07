@@ -10,32 +10,14 @@ from typing import Tuple, List
 
 class YOLOv5:
     def __init__(self, model_path: str, conf_thres: float = 0.25, iou_thres: float = 0.45, max_det: int = 300, nms_mode: str = 'torchvision') -> None:
-        """YOLOv5 class initialization
-
-        Args:
-            model_path (str): Path to .onnx file
-            conf_thres (float, optional): Confidence threshold. Defaults to 0.25.
-            iou_thres (float, optional): IOU threshold. Defaults to 0.45.
-            max_det (int, optional): Maximum number of detections. Defaults to 300.
-            nms_mode (str, optional): NMS calculation method. Defaults to `torchvision`
-        """
         self.conf_threshold = conf_thres
         self.iou_threshold = iou_thres
         self.max_det = max_det
         self.nms_mode = nms_mode
 
-        # Initialize model
         self._initialize_model(model_path=model_path)
 
     def __call__(self, image: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """Run the model on the given image and return predictions.
-
-        Args:
-            image (np.ndarray): Input image.
-
-        Returns:
-            Tuple: boxes, confidence scores, class indexes
-        """
         if not isinstance(image, np.ndarray) or len(image.shape) != 3:
             raise ValueError("Input image must be a numpy array with 3 dimensions (H, W, C).")
 
@@ -44,24 +26,11 @@ class YOLOv5:
         return predictions
 
     def inference(self, image: np.ndarray) -> List[np.ndarray]:
-        """Run inference on the given image.
-
-        Args:
-            image (np.ndarray): Input image.
-
-        Returns:
-            List[np.ndarray]: Model outputs.
-        """
         input_tensor = self.preprocess(image)
         outputs = self.session.run(self.output_names, {self.input_names[0]: input_tensor})
         return outputs
 
     def _initialize_model(self, model_path: str) -> None:
-        """Initialize the model from the given path.
-
-        Args:
-            model_path (str): Path to .onnx model.
-        """
         try:
             self.session = onnxruntime.InferenceSession(
                 model_path,
@@ -80,14 +49,6 @@ class YOLOv5:
             raise
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
-        """Preprocessing
-
-        Args:
-            image (np.ndarray): Input image.
-
-        Returns:
-            np.ndarray: HWC -> CHW, BGR to RGB, Normalize and Add batch dimension.
-        """
         image = image.transpose(2, 0, 1)  # Convert from HWC -> CHW
         image = image[::-1]  # Convert BGR to RGB
         image = np.ascontiguousarray(image)
@@ -111,10 +72,9 @@ class YOLOv5:
         scores = scores[mask]
         classes = classes[mask]
 
-        # Get class with highest probability and corresponding index
         class_ids = np.argmax(classes, axis=1)
 
-        # Filter only "person" class (assuming self.names is a dict {id: "class_name"})
+        # Filter only "person" class
         person_class_ids = [k for k, v in self.names.items() if v.lower() == 'person']
         person_mask = np.isin(class_ids, person_class_ids)
 
