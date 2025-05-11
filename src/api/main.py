@@ -6,6 +6,7 @@ from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import asyncio
 import logging
 from typing import List, Generator
@@ -16,7 +17,7 @@ from src.tracking.yolov5 import YOLOv5
 from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors
 
 current_dir = Path(__file__).parent
-# Configure logging
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -28,6 +29,19 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"]
+)
+
+# Настройки для загрузки больших файлов
+@app.middleware("http")
+async def add_process_time_header(request: Request, call_next):
+    # Увеличиваем лимит до 1GB
+    request.scope["max_request_size"] = 1024 * 1024 * 1024  # 1GB
+    response = await call_next(request)
+    return response
 
 tracker = DeepSort(max_age=60, n_init=5)
 model = YOLOv5(current_dir.parent / "models" / "crowdhuman.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
@@ -163,4 +177,19 @@ async def client_log(log_entry: LogEntry):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9090, log_level="info")
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=9090, 
+        log_level="info",
+        limit_concurrency=1,
+        limit_max_requests=1,
+        timeout_keep_alive=600,
+        # Увеличиваем размер буфера и таймауты
+        loop="uvloop",
+        http="httptools",
+        proxy_headers=True,
+        forwarded_allow_ips="*",
+        ws_ping_interval=20,
+        ws_ping_timeout=20,
+    )

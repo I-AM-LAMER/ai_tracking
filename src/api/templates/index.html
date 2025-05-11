@@ -79,8 +79,13 @@
         <h1>Video Processing System</h1>
         
         <div class="upload-form">
-            <form id="uploadForm">
-                <input type="file" id="videoFile" accept="video/*" required>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" 
+                    id="videoFile" 
+                    name="file" 
+                    accept="video/*" 
+                    required
+                    max="1073741824"> <!-- 1GB в байтах -->
                 <button type="submit" class="button">Process Video</button>
             </form>
         </div>
