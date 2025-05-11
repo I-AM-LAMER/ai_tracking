@@ -2,11 +2,12 @@ import os
 import cv2
 import numpy as np
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, Request
+from fastapi import FastAPI, UploadFile, File, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 import asyncio
 import logging
 from typing import List, Generator
@@ -15,6 +16,10 @@ from pydantic import BaseModel
 
 from src.tracking.yolov5 import YOLOv5
 from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors
+
+# Constants for file handling
+MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB
+CHUNK_SIZE = 1024 * 1024  # 1MB chunks
 
 current_dir = Path(__file__).parent
 
@@ -30,18 +35,17 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+class LargeFileMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path == "/process-video":
+            request.scope["max_request_size"] = MAX_FILE_SIZE
+        return await call_next(request)
+
+app.add_middleware(LargeFileMiddleware)
 app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=["*"]
 )
-
-# Настройки для загрузки больших файлов
-@app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
-    # Увеличиваем лимит до 1GB
-    request.scope["max_request_size"] = 1024 * 1024 * 1024  # 1GB
-    response = await call_next(request)
-    return response
 
 tracker = DeepSort(max_age=60, n_init=5)
 model = YOLOv5(current_dir.parent / "models" / "crowdhuman.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
@@ -158,15 +162,28 @@ async def process_video(file: UploadFile = File(...)):
     """Эндпоинт для обработки видео"""
     logger.info(f"Received video upload request: {file.filename}")
     try:
-        contents = await file.read()
-        logger.info(f"Video file read successfully, size: {len(contents)} bytes")
+        if not file.content_type.startswith('video/'):
+            raise HTTPException(status_code=400, detail="File must be a video")
+            
+        contents = bytearray()
+        size = 0
+        while True:
+            chunk = await file.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > MAX_FILE_SIZE:
+                raise HTTPException(status_code=413, detail="File too large")
+            contents.extend(chunk)
+            
+        logger.info(f"Video file read successfully, size: {size} bytes")
         return StreamingResponse(
-            frame_generator(contents),
+            frame_generator(bytes(contents)),
             media_type='multipart/x-mixed-replace; boundary=frame'
         )
     except Exception as e:
         logger.error(f"Error processing video: {str(e)}")
-        raise
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/log")
 async def client_log(log_entry: LogEntry):
@@ -182,14 +199,18 @@ if __name__ == "__main__":
         host="0.0.0.0", 
         port=9090, 
         log_level="info",
-        limit_concurrency=100,
-        limit_max_requests=100,
+        limit_concurrency=1,
+        limit_max_requests=1,
         timeout_keep_alive=600,
-        # Увеличиваем размер буфера и таймауты
         loop="uvloop",
         http="httptools",
         proxy_headers=True,
         forwarded_allow_ips="*",
         ws_ping_interval=20,
         ws_ping_timeout=20,
+        timeout_graceful_shutdown=300,
+        limit_max_requests_jitter=0,
+        server_header=False,
+        date_header=False,
+        access_log=True,
     )
