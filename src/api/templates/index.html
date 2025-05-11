@@ -41,7 +41,38 @@
             cursor: pointer;
             border-radius: 4px;
         }
+        .log-container {
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f5f5f5;
+            padding: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+        }
     </style>
+    <script>
+        function log(level, message) {
+            const timestamp = new Date().toISOString();
+            console.log(`${timestamp} - ${level}: ${message}`);
+            
+            const logContainer = document.getElementById('logContainer');
+            if (logContainer) {
+                const logEntry = document.createElement('div');
+                logEntry.textContent = `${timestamp} - ${level}: ${message}`;
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+
+            fetch('/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ level, message, timestamp })
+            }).catch(error => console.error('Error sending log:', error));
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -57,6 +88,10 @@
         <div class="video-container">
             <img id="videoStream" src="" alt="Processed video stream">
         </div>
+
+        <div class="log-container" id="logContainer">
+            <h3>Processing Logs</h3>
+        </div>
     </div>
 
     <script>
@@ -65,21 +100,30 @@
             
             const formData = new FormData();
             const fileInput = document.getElementById('videoFile');
-            formData.append('file', fileInput.files[0]);
+            const file = fileInput.files[0];
+            
+            log('info', `Starting upload of file: ${file.name} (${file.size} bytes)`);
+            
+            formData.append('file', file);
 
             try {
+                log('info', 'Sending video processing request...');
                 const response = await fetch('/process-video', {
                     method: 'POST',
                     body: formData
                 });
 
                 if (response.ok) {
+                    log('info', 'Video processing started successfully');
                     const videoStream = document.getElementById('videoStream');
                     videoStream.src = URL.createObjectURL(await response.blob());
+                    log('info', 'Video stream initialized');
                 } else {
+                    log('error', `Error processing video: ${response.statusText}`);
                     alert('Error processing video');
                 }
             } catch (error) {
+                log('error', `Error uploading video: ${error.message}`);
                 console.error('Error:', error);
                 alert('Error uploading video');
             }

@@ -7,113 +7,160 @@ from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import asyncio
+import logging
 from typing import List, Generator
 from deep_sort_realtime.deepsort_tracker import DeepSort
+from pydantic import BaseModel
 
 from src.tracking.yolov5 import YOLOv5
 from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('/app/logs/app.log')
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
 current_dir = Path(__file__).parent
 
-
 tracker = DeepSort(max_age=60, n_init=5)
 model = YOLOv5(current_dir.parent / "models" / "crowdhuman.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
 img_size = check_img_size([640, 640], s=model.stride)
 
+class LogEntry(BaseModel):
+    level: str
+    message: str
+    timestamp: str
+
+@app.on_event("startup")
+async def startup_event():
+    """Executed on application startup"""
+    logger.info("Starting up the application")
+    logger.info(f"Current directory: {current_dir}")
+    logger.info(f"Model path: {current_dir.parent / 'models' / 'crowdhuman.onnx'}")
+
 async def process_frame(frame: np.ndarray) -> np.ndarray:
     """Обработка одного кадра"""
-    resized_image = cv2.resize(frame, tuple(img_size))
-    
-    boxes, scores, class_ids = model(resized_image)
-    boxes = scale_boxes(resized_image.shape, boxes, frame.shape).round()
+    try:
+        resized_image = cv2.resize(frame, tuple(img_size))
+        logger.debug(f"Frame resized to {tuple(img_size)}")
+        
+        boxes, scores, class_ids = model(resized_image)
+        boxes = scale_boxes(resized_image.shape, boxes, frame.shape).round()
 
-    detections = []
-    for box, score, class_id in zip(boxes, scores, class_ids):
-        x1, y1, x2, y2 = box
-        x, y = int(x1), int(y1)
-        w, h = int(x2 - x1), int(y2 - y1)
-        label = model.names[int(class_id)]
-        detections.append(([x, y, w, h], score, label))
+        detections = []
+        for box, score, class_id in zip(boxes, scores, class_ids):
+            x1, y1, x2, y2 = box
+            x, y = int(x1), int(y1)
+            w, h = int(x2 - x1), int(y2 - y1)
+            label = model.names[int(class_id)]
+            detections.append(([x, y, w, h], score, label))
 
-    tracks = tracker.update_tracks(detections, frame=frame)
-    unique_ids = set()
+        tracks = tracker.update_tracks(detections, frame=frame)
+        unique_ids = set()
 
-    for track in tracks:
-        if not track.is_confirmed():
-            continue
+        for track in tracks:
+            if not track.is_confirmed():
+                continue
 
-        track_id = track.track_id
-        x1, y1, x2, y2 = map(int, track.to_ltrb())
-        track_conf = track.det_conf if track.det_conf is not None else 0.0
-        unique_ids.add(track_id)
+            track_id = track.track_id
+            x1, y1, x2, y2 = map(int, track.to_ltrb())
+            track_conf = track.det_conf if track.det_conf is not None else 0.0
+            unique_ids.add(track_id)
 
-        draw_detections(
+            draw_detections(
+                frame,
+                [x1, y1, x2, y2],
+                track_conf,
+                f"id {track_id}",
+                colors(0),
+                unique_count=len(unique_ids)
+            )
+
+        cv2.putText(
             frame,
-            [x1, y1, x2, y2],
-            track_conf,
-            f"id {track_id}",
-            colors(0),
-            unique_count=len(unique_ids)
+            f"Count: {len(unique_ids)}",
+            (10, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 255),
+            2,
+            lineType=cv2.LINE_AA
         )
-
-    cv2.putText(
-        frame,
-        f"Count: {len(unique_ids)}",
-        (10, 30),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        1,
-        (255, 255, 255),
-        2,
-        lineType=cv2.LINE_AA
-    )
-    
-    return frame
+        
+        logger.debug(f"Processed frame with {len(unique_ids)} unique objects")
+        return frame
+    except Exception as e:
+        logger.error(f"Error processing frame: {str(e)}")
+        raise
 
 def frame_generator(video_bytes: bytes) -> Generator[bytes, None, None]:
     """Генератор кадров из видео"""
-    # Создаем временный файл для видео
+    logger.info("Starting video processing")
     temp_file = "temp_video.mp4"
-    with open(temp_file, "wb") as f:
-        f.write(video_bytes)
-
-    cap = cv2.VideoCapture(temp_file)
     
     try:
+        with open(temp_file, "wb") as f:
+            f.write(video_bytes)
+        logger.debug("Temporary video file created")
+        
+        cap = cv2.VideoCapture(temp_file)
+        
         while cap.isOpened():
             success, frame = cap.read()
             if not success:
                 break
 
-            # Обработка кадра
             processed_frame = asyncio.run(process_frame(frame))
             
-            # Кодирование кадра в JPEG
             _, buffer = cv2.imencode('.jpg', processed_frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    except Exception as e:
+        logger.error(f"Error in frame generator: {str(e)}")
+        raise
     finally:
         cap.release()
         if os.path.exists(temp_file):
             os.remove(temp_file)
+            logger.debug("Temporary video file removed")
 
 templates = Jinja2Templates(directory=current_dir / "templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Главная страница"""
+    logger.info("Index page requested")
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/process-video")
 async def process_video(file: UploadFile = File(...)):
     """Эндпоинт для обработки видео"""
-    contents = await file.read()
-    
-    return StreamingResponse(
-        frame_generator(contents),
-        media_type='multipart/x-mixed-replace; boundary=frame'
-    )
+    logger.info(f"Received video upload request: {file.filename}")
+    try:
+        contents = await file.read()
+        logger.info(f"Video file read successfully, size: {len(contents)} bytes")
+        return StreamingResponse(
+            frame_generator(contents),
+            media_type='multipart/x-mixed-replace; boundary=frame'
+        )
+    except Exception as e:
+        logger.error(f"Error processing video: {str(e)}")
+        raise
+
+@app.post("/log")
+async def client_log(log_entry: LogEntry):
+    """Endpoint for client-side logging"""
+    log_level = getattr(logging, log_entry.level.upper(), logging.INFO)
+    logger.log(log_level, f"Client: {log_entry.message}")
+    return {"status": "ok"}
 
 if __name__ == "__main__":
     import uvicorn
