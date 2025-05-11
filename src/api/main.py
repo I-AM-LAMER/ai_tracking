@@ -15,9 +15,11 @@ from src.tracking.utils import check_img_size, scale_boxes, draw_detections, col
 
 app = FastAPI()
 
-# Глобальные объекты для переиспользования
+current_dir = Path(__file__).parent
+
+
 tracker = DeepSort(max_age=60, n_init=5)
-model = YOLOv5("weights/yolov5m.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
+model = YOLOv5(current_dir.parent / "models" / "crowdhuman.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
 img_size = check_img_size([640, 640], s=model.stride)
 
 async def process_frame(frame: np.ndarray) -> np.ndarray:
@@ -95,7 +97,7 @@ def frame_generator(video_bytes: bytes) -> Generator[bytes, None, None]:
         cap.release()
         if os.path.exists(temp_file):
             os.remove(temp_file)
-current_dir = Path(__file__).parent
+
 templates = Jinja2Templates(directory=current_dir / "templates")
 
 @app.get("/", response_class=HTMLResponse)
