@@ -7,3 +7,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./src:/project/src
+    ports:
+      - 9090:9090

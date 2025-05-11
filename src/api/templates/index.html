@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Processing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #videoStream {
+            width: 100%;
+            height: auto;
+        }
+        .upload-form {
+            margin: 20px 0;
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Processing System</h1>
+        
+        <div class="upload-form">
+            <form id="uploadForm">
+                <input type="file" id="videoFile" accept="video/*" required>
+                <button type="submit" class="button">Process Video</button>
+            </form>
+        </div>
+
+        <div class="video-container">
+            <img id="videoStream" src="" alt="Processed video stream">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('videoFile');
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/process-video', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const videoStream = document.getElementById('videoStream');
+                    videoStream.src = URL.createObjectURL(await response.blob());
+                } else {
+                    alert('Error processing video');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error uploading video');
+            }
+        });
+    </script>
+</body>
+</html>

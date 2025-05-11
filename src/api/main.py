@@ -1,155 +1,118 @@
 import os
 import cv2
-import argparse
 import numpy as np
 from pathlib import Path
+from fastapi import FastAPI, UploadFile, File, Request
+from fastapi.responses import StreamingResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+import asyncio
+from typing import List, Generator
 from deep_sort_realtime.deepsort_tracker import DeepSort
 
-from typing import List
-
 from src.tracking.yolov5 import YOLOv5
-from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors, increment_path, LoadMedia
+from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors
 
+app = FastAPI()
 
-def run_object_detection(
-    weights: str,
-    source: str,
-    img_size: List[int],
-    conf_thres: float,
-    iou_thres: float,
-    max_det: int,
-    save: bool,
-    view: bool,
-    project: str,
-    name: str
-):
-    if save:
-        save_dir = increment_path(Path(project) / name)
-        save_dir.mkdir(parents=True, exist_ok=True)
+# Глобальные объекты для переиспользования
+tracker = DeepSort(max_age=60, n_init=5)
+model = YOLOv5("weights/yolov5m.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
+img_size = check_img_size([640, 640], s=model.stride)
 
-    tracker = DeepSort(max_age=60, n_init=5)
-    model = YOLOv5(weights, conf_thres, iou_thres, max_det)
-    img_size = check_img_size(img_size, s=model.stride)
-    dataset = LoadMedia(source, img_size=img_size)
+async def process_frame(frame: np.ndarray) -> np.ndarray:
+    """Обработка одного кадра"""
+    resized_image = cv2.resize(frame, tuple(img_size))
+    
+    boxes, scores, class_ids = model(resized_image)
+    boxes = scale_boxes(resized_image.shape, boxes, frame.shape).round()
+
+    detections = []
+    for box, score, class_id in zip(boxes, scores, class_ids):
+        x1, y1, x2, y2 = box
+        x, y = int(x1), int(y1)
+        w, h = int(x2 - x1), int(y2 - y1)
+        label = model.names[int(class_id)]
+        detections.append(([x, y, w, h], score, label))
+
+    tracks = tracker.update_tracks(detections, frame=frame)
     unique_ids = set()
 
-    vid_writer = None
-    if save and dataset.type in ["video", "webcam"]:
-        cap = dataset.cap
-        save_path = str(save_dir / os.path.basename(source))
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
+    for track in tracks:
+        if not track.is_confirmed():
+            continue
 
-    for resized_image, original_image, status in dataset:
-        boxes, scores, class_ids = model(resized_image)
-        boxes = scale_boxes(resized_image.shape, boxes, original_image.shape).round()
+        track_id = track.track_id
+        x1, y1, x2, y2 = map(int, track.to_ltrb())
+        track_conf = track.det_conf if track.det_conf is not None else 0.0
+        unique_ids.add(track_id)
 
-        detections = []
-        for box, score, class_id in zip(boxes, scores, class_ids):
-            x1, y1, x2, y2 = box
-            x = int(x1)
-            y = int(y1)
-            w = int(x2 - x1)
-            h = int(y2 - y1)
-            label = model.names[int(class_id)]
-            detections.append(([x, y, w, h], score, label))
-
-        tracks = tracker.update_tracks(detections, frame=original_image)
-
-        for track in tracks:
-            if not track.is_confirmed():
-                continue
-
-            track_id = track.track_id
-            x1, y1, x2, y2 = map(int, track.to_ltrb())
-            track_conf = track.det_conf if track.det_conf is not None else 0.0
-
-            unique_ids.add(track_id)
-
-            draw_detections(
-                original_image,
-                [x1, y1, x2, y2],
-                track_conf,
-                f"id {track_id}",
-                colors(0),
-                unique_count=len(unique_ids)
-            )
-        cv2.putText(
-            original_image,
-            f"Count: {len(unique_ids)}",
-            (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1,
-            (255, 255, 255),
-            2,
-            lineType=cv2.LINE_AA
+        draw_detections(
+            frame,
+            [x1, y1, x2, y2],
+            track_conf,
+            f"id {track_id}",
+            colors(0),
+            unique_count=len(unique_ids)
         )
 
-        for c in np.unique(class_ids):
-            n = (class_ids == c).sum()
-            status += f"{n} {model.names[int(c)]}{'s' * (n > 1)}, "
+    cv2.putText(
+        frame,
+        f"Count: {len(unique_ids)}",
+        (10, 30),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 255, 255),
+        2,
+        lineType=cv2.LINE_AA
+    )
+    
+    return frame
 
-        if view:
-            cv2.imshow('Webcam Inference', original_image)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+def frame_generator(video_bytes: bytes) -> Generator[bytes, None, None]:
+    """Генератор кадров из видео"""
+    # Создаем временный файл для видео
+    temp_file = "temp_video.mp4"
+    with open(temp_file, "wb") as f:
+        f.write(video_bytes)
+
+    cap = cv2.VideoCapture(temp_file)
+    
+    try:
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
                 break
 
-        print(status)
+            # Обработка кадра
+            processed_frame = asyncio.run(process_frame(frame))
+            
+            # Кодирование кадра в JPEG
+            _, buffer = cv2.imencode('.jpg', processed_frame)
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+    finally:
+        cap.release()
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
+current_dir = Path(__file__).parent
+templates = Jinja2Templates(directory=current_dir / "templates")
 
-        if save:
-            if dataset.type == "image":
-                save_path = str(save_dir / f"frame_{dataset.frame:04d}.jpg")
-                cv2.imwrite(save_path, original_image)
-            elif dataset.type in ["video", "webcam"]:
-                vid_writer.write(original_image)
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    """Главная страница"""
+    return templates.TemplateResponse("index.html", {"request": request})
 
-    if save and vid_writer is not None:
-        vid_writer.release()
-
-    if save:
-        print(f"Results saved to {save_dir}")
-
-    cv2.destroyAllWindows()
-
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--weights", type=str, default="weights/yolov5m.onnx", help="model path")
-    parser.add_argument("--source", type=str, default="0", help="Path to video/image/webcam")
-    parser.add_argument("--img-size", nargs="+", type=int, default=[640], help="inference size h,w")
-    parser.add_argument("--conf-thres", type=float, default=0.45, help="confidence threshold")
-    parser.add_argument("--iou-thres", type=float, default=0.45, help="NMS IoU threshold")
-    parser.add_argument("--max-det", type=int, default=1000, help="maximum detections per image")
-    parser.add_argument("--save", action="store_true", help="Save detected images")
-    parser.add_argument("--view", action="store_true", help="View inferenced images")
-    parser.add_argument("--project", default="runs", help="save results to project/name")
-    parser.add_argument("--name", default="exp", help="save results to project/name")
-    args = parser.parse_args()
-    args.img_size = args.img_size * 2 if len(args.img_size) == 1 else args.img_size
-    return args
-
-
-def download_weights(weights):
-    pass
-
-
-def main():
-    params = parse_args()
-    run_object_detection(
-        weights=params.weights,
-        source=params.source,
-        img_size=params.img_size,
-        conf_thres=params.conf_thres,
-        iou_thres=params.iou_thres,
-        max_det=params.max_det,
-        save=params.save,
-        view=params.view,
-        project=params.project,
-        name=params.name
+@app.post("/process-video")
+async def process_video(file: UploadFile = File(...)):
+    """Эндпоинт для обработки видео"""
+    contents = await file.read()
+    
+    return StreamingResponse(
+        frame_generator(contents),
+        media_type='multipart/x-mixed-replace; boundary=frame'
     )
 
-
 if __name__ == "__main__":
-    main()
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=9090, log_level="info")

@@ -17,6 +17,6 @@ COPY ./src /project/src
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-CMD ["python3", "src/api/main.py", "--weights", "/project/src/models/crowdhuman.onnx", "--source", "/project/src/api/detection.mp4", "--save", "--project", "/project/src", "--name", "results"]
+CMD ["python3", "src/api/main.py"]
 
 
