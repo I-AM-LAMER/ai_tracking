@@ -15,20 +15,19 @@ from pydantic import BaseModel
 from src.tracking.yolov5 import YOLOv5
 from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors
 
+current_dir = Path(__file__).parent
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('/app/logs/app.log')
+        logging.FileHandler(current_dir.parent / 'logs' / 'app.log')
     ]
 )
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
-
-current_dir = Path(__file__).parent
 
 tracker = DeepSort(max_age=60, n_init=5)
 model = YOLOv5(current_dir.parent / "models" / "crowdhuman.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)

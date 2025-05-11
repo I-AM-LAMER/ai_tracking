@@ -1,0 +1,25 @@
+2025-05-11 20:39:53,153 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-11 20:39:53,154 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-11 20:39:53,154 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-11 20:39:53,154 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-11 20:39:53,154 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-11 20:39:53,435 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-11 20:39:53,435 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-11 20:39:53,435 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-11 20:39:53,436 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-11 20:39:53,436 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-11 20:39:53,436 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-11 20:39:53,436 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-11 20:39:53,436 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-11 20:39:53,436 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-11 20:39:54,389 - __main__ - INFO - Starting up the application
+2025-05-11 20:39:54,390 - __main__ - INFO - Current directory: /project/src/api
+2025-05-11 20:39:54,390 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-11 20:40:13,724 - __main__ - INFO - Index page requested
+2025-05-11 20:40:25,440 - __main__ - INFO - Client: Sending video processing request...
+2025-05-11 20:40:25,505 - __main__ - INFO - Client: Starting upload of file: detection.mp4 (7606633 bytes)
+2025-05-11 20:40:44,505 - __main__ - INFO - Received video upload request: detection.mp4
+2025-05-11 20:40:44,511 - __main__ - INFO - Video file read successfully, size: 7606633 bytes
+2025-05-11 20:40:44,514 - __main__ - INFO - Starting video processing
+2025-05-11 20:40:46,925 - __main__ - INFO - Client: Video processing started successfully
+2025-05-11 20:41:25,451 - __main__ - ERROR - Client: Error uploading video: Content-Length header of network response exceeds response Body.
