@@ -182,8 +182,8 @@ if __name__ == "__main__":
         host="0.0.0.0", 
         port=9090, 
         log_level="info",
-        limit_concurrency=1,
-        limit_max_requests=1,
+        limit_concurrency=100,
+        limit_max_requests=100,
         timeout_keep_alive=600,
         # Увеличиваем размер буфера и таймауты
         loop="uvloop",

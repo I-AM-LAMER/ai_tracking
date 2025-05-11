@@ -23,3 +23,73 @@
 2025-05-11 20:40:44,514 - __main__ - INFO - Starting video processing
 2025-05-11 20:40:46,925 - __main__ - INFO - Client: Video processing started successfully
 2025-05-11 20:41:25,451 - __main__ - ERROR - Client: Error uploading video: Content-Length header of network response exceeds response Body.
+2025-05-11 21:22:37,772 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-11 21:22:37,772 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-11 21:22:37,772 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-11 21:22:37,773 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-11 21:22:37,773 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-11 21:22:38,018 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-11 21:22:38,018 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-11 21:22:38,018 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-11 21:22:38,018 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-11 21:22:38,019 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-11 21:22:38,019 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-11 21:22:38,019 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-11 21:22:38,019 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-11 21:22:38,019 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-11 21:24:54,827 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-11 21:24:54,829 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-11 21:24:54,829 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-11 21:24:54,829 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-11 21:24:54,829 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-11 21:24:55,065 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-11 21:24:55,065 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-11 21:24:55,065 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-11 21:24:55,066 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-11 21:24:55,067 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-11 21:24:55,067 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-11 21:24:55,067 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-11 21:24:55,067 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-11 21:24:55,067 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-11 21:27:48,292 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-11 21:27:48,293 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-11 21:27:48,293 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-11 21:27:48,293 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-11 21:27:48,293 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-11 21:27:48,636 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-11 21:27:48,637 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-11 21:27:48,637 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-11 21:27:49,528 - __main__ - INFO - Starting up the application
+2025-05-11 21:27:49,528 - __main__ - INFO - Current directory: /project/src/api
+2025-05-11 21:27:49,529 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-11 21:32:57,304 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-11 21:32:57,304 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-11 21:32:57,305 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-11 21:32:57,305 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-11 21:32:57,305 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-11 21:32:57,571 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-11 21:32:57,571 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-11 21:32:57,571 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-11 21:32:57,572 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-11 21:32:57,572 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-11 21:32:57,572 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-11 21:32:57,573 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-11 21:32:57,573 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-11 21:32:57,573 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-11 21:32:58,555 - __main__ - INFO - Starting up the application
+2025-05-11 21:32:58,555 - __main__ - INFO - Current directory: /project/src/api
+2025-05-11 21:32:58,556 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-11 21:35:09,118 - __main__ - INFO - Index page requested
+2025-05-11 21:35:14,751 - __main__ - INFO - Client: Starting upload of file: detection.mp4 (7606633 bytes)
+2025-05-11 21:35:14,839 - __main__ - INFO - Client: Sending video processing request...
+2025-05-11 21:35:33,995 - __main__ - INFO - Received video upload request: detection.mp4
+2025-05-11 21:35:34,003 - __main__ - INFO - Video file read successfully, size: 7606633 bytes
+2025-05-11 21:35:34,005 - __main__ - INFO - Starting video processing
+2025-05-11 21:35:36,392 - __main__ - INFO - Client: Video processing started successfully
+2025-05-11 21:36:14,873 - __main__ - ERROR - Client: Error uploading video: Content-Length header of network response exceeds response Body.
