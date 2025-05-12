@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Video Processing</title>
+    <meta charset="UTF-8">
+    <title>AI Video Tracking</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,10 +21,12 @@
             max-width: 800px;
             border: 1px solid #ccc;
             padding: 10px;
+            background: #fafafa;
         }
         #videoStream {
             width: 100%;
             height: auto;
+            background: #000;
         }
         .upload-form {
             margin: 20px 0;
@@ -32,12 +35,9 @@
             background-color: #4CAF50;
             border: none;
             color: white;
-            padding: 15px 32px;
+            padding: 10px 24px;
             text-align: center;
-            text-decoration: none;
-            display: inline-block;
             font-size: 16px;
-            margin: 4px 2px;
             cursor: pointer;
             border-radius: 4px;
         }
@@ -55,7 +55,6 @@
         function log(level, message) {
             const timestamp = new Date().toISOString();
             console.log(`${timestamp} - ${level}: ${message}`);
-            
             const logContainer = document.getElementById('logContainer');
             if (logContainer) {
                 const logEntry = document.createElement('div');
@@ -63,76 +62,64 @@
                 logContainer.appendChild(logEntry);
                 logContainer.scrollTop = logContainer.scrollHeight;
             }
-
             fetch('/log', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ level, message, timestamp })
             }).catch(error => console.error('Error sending log:', error));
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadForm = document.getElementById('uploadForm');
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fileInput = document.getElementById('videoFile');
+                const file = fileInput.files[0];
+                if (!file) {
+                    log('error', 'Файл не выбран');
+                    alert('Выберите видеофайл!');
+                    return;
+                }
+                log('info', `Загрузка файла: ${file.name} (${file.size} байт)`);
+                const formData = new FormData();
+                formData.append('file', file);
+                try {
+                    const response = await fetch('/upload-video', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (response.ok) {
+                        log('info', 'Видео успешно загружено. Запуск обработки...');
+                        // Устанавливаем src на потоковое видео
+                        document.getElementById('videoStream').src = '/video-stream?' + Date.now();
+                        log('info', 'Потоковое видео инициализировано');
+                    } else {
+                        log('error', `Ошибка загрузки видео: ${response.statusText}`);
+                        alert('Ошибка загрузки видео');
+                    }
+                } catch (error) {
+                    log('error', `Ошибка загрузки: ${error.message}`);
+                    alert('Ошибка загрузки видео');
+                }
+            });
+        });
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Video Processing System</h1>
-        
+        <h1>AI Video Tracking</h1>
         <div class="upload-form">
             <form id="uploadForm" enctype="multipart/form-data">
-                <input type="file" 
-                    id="videoFile" 
-                    name="file" 
-                    accept="video/*" 
-                    required
-                    max="1073741824"> <!-- 1GB в байтах -->
-                <button type="submit" class="button">Process Video</button>
+                <input type="file" id="videoFile" name="file" accept="video/*" required>
+                <button type="submit" class="button">Загрузить и обработать</button>
             </form>
         </div>
-
         <div class="video-container">
-            <img id="videoStream" src="" alt="Processed video stream">
+            <img id="videoStream" src="" alt="Поток обработанного видео">
         </div>
-
         <div class="log-container" id="logContainer">
-            <h3>Processing Logs</h3>
+            <h3>Логи обработки</h3>
         </div>
     </div>
-
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            const fileInput = document.getElementById('videoFile');
-            const file = fileInput.files[0];
-            
-            log('info', `Starting upload of file: ${file.name} (${file.size} bytes)`);
-            
-            formData.append('file', file);
-
-            try {
-                log('info', 'Sending video processing request...');
-                const response = await fetch('/process-video', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    log('info', 'Video processing started successfully');
-                    const videoStream = document.getElementById('videoStream');
-                    videoStream.src = URL.createObjectURL(await response.blob());
-                    log('info', 'Video stream initialized');
-                } else {
-                    log('error', `Error processing video: ${response.statusText}`);
-                    alert('Error processing video');
-                }
-            } catch (error) {
-                log('error', `Error uploading video: ${error.message}`);
-                console.error('Error:', error);
-                alert('Error uploading video');
-            }
-        });
-    </script>
 </body>
 </html>

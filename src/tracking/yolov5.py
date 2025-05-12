@@ -9,11 +9,12 @@ from typing import Tuple, List
 
 
 class YOLOv5:
-    def __init__(self, model_path: str, conf_thres: float = 0.25, iou_thres: float = 0.45, max_det: int = 300, nms_mode: str = 'torchvision') -> None:
+    def __init__(self, model_path: str, conf_thres: float = 0.6, iou_thres: float = 0.45, max_det: int = 300, nms_mode: str = 'torchvision') -> None:
         self.conf_threshold = conf_thres
         self.iou_threshold = iou_thres
         self.max_det = max_det
         self.nms_mode = nms_mode
+        self.default = False
 
         self._initialize_model(model_path=model_path)
 
@@ -74,7 +75,6 @@ class YOLOv5:
 
         class_ids = np.argmax(classes, axis=1)
 
-        # Filter only "person" class
         person_class_ids = [k for k, v in self.names.items() if v.lower() == 'person']
         person_mask = np.isin(class_ids, person_class_ids)
 

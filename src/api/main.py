@@ -1,4 +1,3 @@
-import os
 import cv2
 import numpy as np
 from pathlib import Path
@@ -10,12 +9,12 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 import asyncio
 import logging
-from typing import List, Generator
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from pydantic import BaseModel
+import time
 
 from src.tracking.yolov5 import YOLOv5
-from src.tracking.utils import check_img_size, scale_boxes, draw_detections, colors
+from src.tracking.utils import check_img_size, draw_detections, colors
 
 # Constants for file handling
 MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1GB
@@ -63,24 +62,39 @@ async def startup_event():
     logger.info(f"Current directory: {current_dir}")
     logger.info(f"Model path: {current_dir.parent / 'models' / 'crowdhuman.onnx'}")
 
-async def process_frame(frame: np.ndarray) -> np.ndarray:
-    """Обработка одного кадра"""
+last_time = [time.time()]
+fps = [0.0]
+frame_counter = [0]
+YOLO_INTERVAL = 5
+last_detections = [[]] 
+
+def process_frame(frame: np.ndarray) -> np.ndarray:
     try:
+        # FPS расчет
+        now = time.time()
+        fps[0] = 1.0 / (now - last_time[0]) if last_time[0] != 0 else 0.0
+        last_time[0] = now
+
         resized_image = cv2.resize(frame, tuple(img_size))
-        logger.debug(f"Frame resized to {tuple(img_size)}")
-        
-        boxes, scores, class_ids = model(resized_image)
-        boxes = scale_boxes(resized_image.shape, boxes, frame.shape).round()
 
-        detections = []
-        for box, score, class_id in zip(boxes, scores, class_ids):
-            x1, y1, x2, y2 = box
-            x, y = int(x1), int(y1)
-            w, h = int(x2 - x1), int(y2 - y1)
-            label = model.names[int(class_id)]
-            detections.append(([x, y, w, h], score, label))
+        frame_counter[0] += 1
 
-        tracks = tracker.update_tracks(detections, frame=frame)
+        if frame_counter[0] % YOLO_INTERVAL == 1 or not last_detections[0]:
+            boxes, scores, class_ids = model(resized_image)
+            detections = []
+            for box, score, class_id in zip(boxes, scores, class_ids):
+                x1, y1, x2, y2 = box
+                x = int(x1)
+                y = int(y1)
+                w = int(x2 - x1)
+                h = int(y2 - y1)
+                label = model.names[int(class_id)] if isinstance(model.names, dict) else str(class_id)
+                detections.append(([x, y, w, h], score, label))
+            last_detections[0] = detections
+        else:
+            detections = last_detections[0]
+
+        tracks = tracker.update_tracks(detections, frame=resized_image)
         unique_ids = set()
 
         for track in tracks:
@@ -93,7 +107,7 @@ async def process_frame(frame: np.ndarray) -> np.ndarray:
             unique_ids.add(track_id)
 
             draw_detections(
-                frame,
+                resized_image,
                 [x1, y1, x2, y2],
                 track_conf,
                 f"id {track_id}",
@@ -102,7 +116,7 @@ async def process_frame(frame: np.ndarray) -> np.ndarray:
             )
 
         cv2.putText(
-            frame,
+            resized_image,
             f"Count: {len(unique_ids)}",
             (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
@@ -111,43 +125,24 @@ async def process_frame(frame: np.ndarray) -> np.ndarray:
             2,
             lineType=cv2.LINE_AA
         )
-        
-        logger.debug(f"Processed frame with {len(unique_ids)} unique objects")
-        return frame
+
+        # FPS в правом верхнем углу
+        cv2.putText(
+            resized_image,
+            f"FPS: {fps[0]:.1f}",
+            (resized_image.shape[1] - 150, 30),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (0, 255, 0),
+            2,
+            lineType=cv2.LINE_AA
+        )
+
+        logger.debug(f"Processed frame with {len(unique_ids)} unique objects, FPS: {fps[0]:.1f}")
+        return resized_image
     except Exception as e:
         logger.error(f"Error processing frame: {str(e)}")
         raise
-
-def frame_generator(video_bytes: bytes) -> Generator[bytes, None, None]:
-    """Генератор кадров из видео"""
-    logger.info("Starting video processing")
-    temp_file = "temp_video.mp4"
-    
-    try:
-        with open(temp_file, "wb") as f:
-            f.write(video_bytes)
-        logger.debug("Temporary video file created")
-        
-        cap = cv2.VideoCapture(temp_file)
-        
-        while cap.isOpened():
-            success, frame = cap.read()
-            if not success:
-                break
-
-            processed_frame = asyncio.run(process_frame(frame))
-            
-            _, buffer = cv2.imencode('.jpg', processed_frame)
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
-    except Exception as e:
-        logger.error(f"Error in frame generator: {str(e)}")
-        raise
-    finally:
-        cap.release()
-        if os.path.exists(temp_file):
-            os.remove(temp_file)
-            logger.debug("Temporary video file removed")
 
 templates = Jinja2Templates(directory=current_dir / "templates")
 
@@ -157,33 +152,31 @@ async def index(request: Request):
     logger.info("Index page requested")
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/process-video")
-async def process_video(file: UploadFile = File(...)):
-    """Эндпоинт для обработки видео"""
-    logger.info(f"Received video upload request: {file.filename}")
-    try:
-        if not file.content_type.startswith('video/'):
-            raise HTTPException(status_code=400, detail="File must be a video")
-            
-        contents = bytearray()
-        size = 0
-        while True:
-            chunk = await file.read(CHUNK_SIZE)
-            if not chunk:
+@app.post("/upload-video")
+async def upload_video(file: UploadFile = File(...)):
+    temp_path = current_dir / "temp_video.mp4"
+    with open(temp_path, "wb") as f:
+        while chunk := await file.read(CHUNK_SIZE):
+            f.write(chunk)
+    return {"status": "ok"}
+
+@app.get("/video-stream")
+def video_stream():
+    temp_path = current_dir / "temp_video.mp4"
+    if not temp_path.exists():
+        raise HTTPException(status_code=404, detail="No video uploaded")
+    def gen():
+        cap = cv2.VideoCapture(str(temp_path))
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
                 break
-            size += len(chunk)
-            if size > MAX_FILE_SIZE:
-                raise HTTPException(status_code=413, detail="File too large")
-            contents.extend(chunk)
-            
-        logger.info(f"Video file read successfully, size: {size} bytes")
-        return StreamingResponse(
-            frame_generator(bytes(contents)),
-            media_type='multipart/x-mixed-replace; boundary=frame'
-        )
-    except Exception as e:
-        logger.error(f"Error processing video: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+            result = process_frame(frame)
+            _, buffer = cv2.imencode('.jpg', result)
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
+        cap.release()
+    return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
 
 @app.post("/log")
 async def client_log(log_entry: LogEntry):
@@ -199,8 +192,8 @@ if __name__ == "__main__":
         host="0.0.0.0", 
         port=9090, 
         log_level="info",
-        limit_concurrency=1,
-        limit_max_requests=1,
+        limit_concurrency=100,
+        limit_max_requests=100,
         timeout_keep_alive=600,
         loop="uvloop",
         http="httptools",
@@ -209,7 +202,6 @@ if __name__ == "__main__":
         ws_ping_interval=20,
         ws_ping_timeout=20,
         timeout_graceful_shutdown=300,
-        limit_max_requests_jitter=0,
         server_header=False,
         date_header=False,
         access_log=True,
