@@ -49,6 +49,7 @@ app.add_middleware(
 tracker = DeepSort(max_age=60, n_init=5)
 model = YOLOv5(current_dir.parent / "models" / "crowdhuman.onnx", conf_thres=0.45, iou_thres=0.45, max_det=1000)
 img_size = check_img_size([640, 640], s=model.stride)
+track_history = {}
 
 class LogEntry(BaseModel):
     level: str
@@ -103,8 +104,21 @@ def process_frame(frame: np.ndarray) -> np.ndarray:
 
             track_id = track.track_id
             x1, y1, x2, y2 = map(int, track.to_ltrb())
+            x_center = int((x1 + x2) / 2)
+            y_center = int((y1 + y2) / 2)
             track_conf = track.det_conf if track.det_conf is not None else 0.0
             unique_ids.add(track_id)
+
+            if track_id not in track_history:
+                track_history[track_id] = []
+            track_history[track_id].append((x_center, y_center))
+            # Ограничим длину истории (например, 50 точек)
+            if len(track_history[track_id]) > 50:
+                track_history[track_id] = track_history[track_id][-50:]
+
+            pts = track_history[track_id]
+            for j in range(1, len(pts)):
+                cv2.line(resized_image, pts[j - 1], pts[j], (0, 255, 255), 2)
 
             draw_detections(
                 resized_image,

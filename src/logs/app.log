@@ -26355,3 +26355,172 @@
 2025-05-12 05:45:17,121 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
 2025-05-12 05:45:17,157 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
 2025-05-12 05:45:17,160 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-12 10:33:30,899 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-12 10:33:30,899 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-12 10:33:30,899 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-12 10:33:30,899 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-12 10:33:30,899 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-12 10:33:30,955 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-12 10:33:31,428 - __main__ - INFO - Starting up the application
+2025-05-12 10:33:31,428 - __main__ - INFO - Current directory: /project/src/api
+2025-05-12 10:33:31,428 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-12 10:33:38,093 - __main__ - INFO - Index page requested
+2025-05-12 10:33:43,128 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-12 10:33:43,167 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-12 10:33:43,168 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-12 10:59:03,695 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-12 10:59:03,695 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-12 10:59:03,695 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-12 10:59:03,695 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-12 10:59:03,695 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-12 10:59:03,747 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-12 10:59:03,747 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-12 10:59:03,747 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-12 10:59:03,747 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-12 10:59:03,747 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-12 10:59:03,747 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-12 10:59:03,748 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-12 10:59:03,748 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-12 10:59:03,748 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-12 10:59:04,255 - __main__ - INFO - Starting up the application
+2025-05-12 10:59:04,256 - __main__ - INFO - Current directory: /project/src/api
+2025-05-12 10:59:04,256 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-12 10:59:09,873 - __main__ - INFO - Index page requested
+2025-05-12 11:35:56,070 - __main__ - INFO - Index page requested
+2025-05-12 11:36:03,205 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-12 11:36:03,248 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-12 11:36:03,249 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-13 07:04:36,451 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-13 07:04:36,451 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-13 07:04:36,451 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-13 07:04:36,452 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-13 07:04:36,452 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-13 07:04:36,539 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-13 07:04:36,539 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-13 07:04:36,540 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-13 07:04:37,100 - __main__ - INFO - Starting up the application
+2025-05-13 07:04:37,100 - __main__ - INFO - Current directory: /project/src/api
+2025-05-13 07:04:37,100 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-13 07:04:50,099 - __main__ - INFO - Index page requested
+2025-05-13 07:04:56,820 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-13 07:04:56,869 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-13 07:04:56,874 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-13 07:14:26,026 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-13 07:14:26,027 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-13 07:14:26,027 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-13 07:14:26,027 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-13 07:14:26,027 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-13 07:14:26,109 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-13 07:14:26,635 - __main__ - INFO - Starting up the application
+2025-05-13 07:14:26,636 - __main__ - INFO - Current directory: /project/src/api
+2025-05-13 07:14:26,636 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-13 07:14:37,440 - __main__ - INFO - Index page requested
+2025-05-13 07:14:44,670 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-13 07:14:44,724 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-13 07:14:44,728 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-13 07:16:28,711 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-13 07:16:28,712 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-13 07:16:28,712 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-13 07:16:28,712 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-13 07:16:28,712 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-13 07:16:28,780 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-13 07:16:29,332 - __main__ - INFO - Starting up the application
+2025-05-13 07:16:29,332 - __main__ - INFO - Current directory: /project/src/api
+2025-05-13 07:16:29,332 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-13 07:19:35,617 - __main__ - INFO - Index page requested
+2025-05-13 07:19:41,125 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-13 07:19:41,182 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-13 07:19:41,185 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-13 07:31:22,931 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-13 07:31:22,931 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-13 07:31:22,931 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-13 07:31:22,931 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-13 07:31:22,932 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-13 07:31:23,018 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-13 07:31:23,019 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-13 07:31:23,558 - __main__ - INFO - Starting up the application
+2025-05-13 07:31:23,558 - __main__ - INFO - Current directory: /project/src/api
+2025-05-13 07:31:23,559 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-13 07:31:30,864 - __main__ - INFO - Index page requested
+2025-05-13 07:31:38,715 - __main__ - INFO - Client: Загрузка файла: 4265036-sd_640_360_30fps.mp4 (794990 байт)
+2025-05-13 07:31:38,743 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-13 07:31:38,749 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-13 07:35:40,248 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-13 07:35:40,249 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-13 07:35:40,249 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-13 07:35:40,249 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-13 07:35:40,249 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-13 07:35:40,339 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-13 07:35:40,339 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-13 07:35:40,339 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-13 07:35:40,339 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-13 07:35:40,340 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-13 07:35:40,340 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-13 07:35:40,340 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-13 07:35:40,340 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-13 07:35:40,340 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-13 07:35:40,893 - __main__ - INFO - Starting up the application
+2025-05-13 07:35:40,893 - __main__ - INFO - Current directory: /project/src/api
+2025-05-13 07:35:40,894 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-13 07:35:58,467 - __main__ - INFO - Index page requested
+2025-05-13 07:36:04,295 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-13 07:36:04,349 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-13 07:36:04,351 - __main__ - INFO - Client: Потоковое видео инициализировано
+2025-05-13 07:36:51,446 - deep_sort_realtime.embedder.embedder_pytorch - INFO - MobileNetV2 Embedder for Deep Sort initialised
+2025-05-13 07:36:51,447 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - gpu enabled: False
+2025-05-13 07:36:51,447 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - half precision: False
+2025-05-13 07:36:51,447 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - max batch size: 16
+2025-05-13 07:36:51,447 - deep_sort_realtime.embedder.embedder_pytorch - INFO - - expects BGR: True
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - DeepSort Tracker initialised
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - max age: 60
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - appearance threshold: 0.2
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - nms threshold: OFF
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - max num of appearance features: None
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - overriding track class : No
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - today given : No
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - in-build embedder : Yes
+2025-05-13 07:36:51,499 - deep_sort_realtime.deepsort_tracker - INFO - - polygon detections : No
+2025-05-13 07:36:52,040 - __main__ - INFO - Starting up the application
+2025-05-13 07:36:52,040 - __main__ - INFO - Current directory: /project/src/api
+2025-05-13 07:36:52,040 - __main__ - INFO - Model path: /project/src/models/crowdhuman.onnx
+2025-05-13 07:37:15,532 - __main__ - INFO - Index page requested
+2025-05-13 07:37:28,819 - __main__ - INFO - Client: Загрузка файла: detection.mp4 (7606633 байт)
+2025-05-13 07:37:28,860 - __main__ - INFO - Client: Видео успешно загружено. Запуск обработки...
+2025-05-13 07:37:28,862 - __main__ - INFO - Client: Потоковое видео инициализировано
